@@ -43,6 +43,8 @@ public:
 	/** \param file File handle to check.
 	\return Pointer to newly created image, or 0 upon error. */
 	virtual IImage* loadImage(io::IReadFile* file) const = 0;
+
+	virtual IImage* loadImage(io::IReadFile* file, int widht, int height) const { return loadImage(file); };
 };
 
 

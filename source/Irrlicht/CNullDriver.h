@@ -83,10 +83,10 @@ namespace video
 		virtual void setMaterial(const SMaterial& material) _IRR_OVERRIDE_;
 
 		//! loads a Texture
-		virtual ITexture* getTexture(const io::path& filename) _IRR_OVERRIDE_;
+		virtual ITexture* getTexture(const io::path& filename, int width=0, int height=0) _IRR_OVERRIDE_;
 
 		//! loads a Texture
-		virtual ITexture* getTexture(io::IReadFile* file) _IRR_OVERRIDE_;
+		virtual ITexture* getTexture(io::IReadFile* file, int width=0, int height=0) _IRR_OVERRIDE_;
 
 		//! Returns a texture by index
 		virtual ITexture* getTextureByIndex(u32 index) _IRR_OVERRIDE_;
@@ -343,10 +343,10 @@ namespace video
 		virtual bool getTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag) const _IRR_OVERRIDE_;
 
 		//! Creates a software image from a file.
-		virtual IImage* createImageFromFile(const io::path& filename) _IRR_OVERRIDE_;
+		virtual IImage* createImageFromFile(const io::path& filename, int width=0, int height=0) _IRR_OVERRIDE_;
 
 		//! Creates a software image from a file.
-		virtual IImage* createImageFromFile(io::IReadFile* file) _IRR_OVERRIDE_;
+		virtual IImage* createImageFromFile(io::IReadFile* file, int width=0, int height=0) _IRR_OVERRIDE_;
 
 		//! Creates a software image from a byte array.
 		/** \param useForeignMemory: If true, the image will use the data pointer
@@ -672,7 +672,7 @@ namespace video
 		void deleteAllTextures();
 
 		//! opens the file and loads it into the surface
-		video::ITexture* loadTextureFromFile(io::IReadFile* file, const io::path& hashName = "");
+		video::ITexture* loadTextureFromFile(io::IReadFile* file, const io::path& hashName = "", int width=0, int height=0);
 
 		//! adds a surface, not loaded or created by the Irrlicht Engine
 		void addTexture(video::ITexture* surface);

@@ -371,7 +371,7 @@ namespace video
 		\return Pointer to the texture, or 0 if the texture
 		could not be loaded. This pointer should not be dropped. See
 		IReferenceCounted::drop() for more information. */
-		virtual ITexture* getTexture(const io::path& filename) = 0;
+		virtual ITexture* getTexture(const io::path& filename, int width=0, int height=0) = 0;
 
 		//! Get access to a named texture.
 		/** Loads the texture from disk if it is not
@@ -383,7 +383,7 @@ namespace video
 		\return Pointer to the texture, or 0 if the texture
 		could not be loaded. This pointer should not be dropped. See
 		IReferenceCounted::drop() for more information. */
-		virtual ITexture* getTexture(io::IReadFile* file) =0;
+		virtual ITexture* getTexture(io::IReadFile* file, int width=0, int height=0) =0;
 
 		//! Returns a texture by index
 		/** \param index: Index of the texture, must be smaller than
@@ -1186,7 +1186,7 @@ namespace video
 		\return The created image.
 		If you no longer need the image, you should call IImage::drop().
 		See IReferenceCounted::drop() for more information. */
-		virtual IImage* createImageFromFile(const io::path& filename) = 0;
+		virtual IImage* createImageFromFile(const io::path& filename, int width=0, int height=0) = 0;
 
 		//! Creates a software image from a file.
 		/** No hardware texture will be created for this image. This
@@ -1196,7 +1196,7 @@ namespace video
 		\return The created image.
 		If you no longer need the image, you should call IImage::drop().
 		See IReferenceCounted::drop() for more information. */
-		virtual IImage* createImageFromFile(io::IReadFile* file) =0;
+		virtual IImage* createImageFromFile(io::IReadFile* file, int width=0, int height=0) =0;
 
 		//! Writes the provided image to a file.
 		/** Requires that there is a suitable image writer registered

@@ -416,7 +416,7 @@ void CNullDriver::renameTexture(ITexture* texture, const io::path& newName)
 
 
 //! loads a Texture
-ITexture* CNullDriver::getTexture(const io::path& filename)
+	ITexture* CNullDriver::getTexture(const io::path& filename, int width, int height)
 {
 	// Identify textures by their absolute filenames if possible.
 	const io::path absolutePath = FileSystem->getAbsolutePath(filename);
@@ -456,7 +456,7 @@ ITexture* CNullDriver::getTexture(const io::path& filename)
 			return texture;
 		}
 
-		texture = loadTextureFromFile(file);
+		texture = loadTextureFromFile(file, "", width, height);
 		file->drop();
 
 		if (texture)
@@ -478,7 +478,7 @@ ITexture* CNullDriver::getTexture(const io::path& filename)
 
 
 //! loads a Texture
-ITexture* CNullDriver::getTexture(io::IReadFile* file)
+	ITexture* CNullDriver::getTexture(io::IReadFile* file, int width, int height)
 {
 	ITexture* texture = 0;
 
@@ -492,7 +492,7 @@ ITexture* CNullDriver::getTexture(io::IReadFile* file)
 			return texture;
 		}
 
-		texture = loadTextureFromFile(file);
+		texture = loadTextureFromFile(file, "", width, height);
 
 		if (texture)
 		{
@@ -510,10 +510,10 @@ ITexture* CNullDriver::getTexture(io::IReadFile* file)
 
 
 //! opens the file and loads it into the surface
-video::ITexture* CNullDriver::loadTextureFromFile(io::IReadFile* file, const io::path& hashName )
+	video::ITexture* CNullDriver::loadTextureFromFile(io::IReadFile* file, const io::path& hashName, int width, int height)
 {
 	ITexture* texture = 0;
-	IImage* image = createImageFromFile(file);
+	IImage* image = createImageFromFile(file, width, height);
 
 	if (image)
 	{
@@ -1303,7 +1303,7 @@ bool CNullDriver::getTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag) const
 
 
 //! Creates a software image from a file.
-IImage* CNullDriver::createImageFromFile(const io::path& filename)
+	IImage* CNullDriver::createImageFromFile(const io::path& filename, int width, int height)
 {
 	if (!filename.size())
 		return 0;
@@ -1313,7 +1313,7 @@ IImage* CNullDriver::createImageFromFile(const io::path& filename)
 
 	if (file)
 	{
-		image = createImageFromFile(file);
+		image = createImageFromFile(file, width, height);
 		file->drop();
 	}
 	else
@@ -1324,7 +1324,7 @@ IImage* CNullDriver::createImageFromFile(const io::path& filename)
 
 
 //! Creates a software image from a file.
-IImage* CNullDriver::createImageFromFile(io::IReadFile* file)
+	IImage* CNullDriver::createImageFromFile(io::IReadFile* file, int width, int height)
 {
 	if (!file)
 		return 0;
@@ -1340,7 +1340,7 @@ IImage* CNullDriver::createImageFromFile(io::IReadFile* file)
 		{
 			// reset file position which might have changed due to previous loadImage calls
 			file->seek(0);
-			image = SurfaceLoader[i]->loadImage(file);
+			image = SurfaceLoader[i]->loadImage(file, width, height);
 			if (image)
 				return image;
 		}

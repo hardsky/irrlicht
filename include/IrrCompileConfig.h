@@ -249,6 +249,16 @@ define out. */
 
 #endif
 
+#if defined(_IRR_LINUX_PLATFORM_)
+
+#define _IRR_COMPILE_WITH_SVG_LOADER_
+#ifdef NO_IRR_COMPILE_WITH_SVG_LOADER_
+#undef _IRR_COMPILE_WITH_SVG_LOADER_
+#endif
+
+#endif
+
+
 //! Define _IRR_COMPILE_WITH_GUI_ to compile the engine with the built-in GUI
 /** Disable this if you are using an external library to draw the GUI. If you disable this then
 you will not be able to use anything provided by the GUI Environment, including loading fonts. */
