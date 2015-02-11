@@ -114,7 +114,7 @@ namespace irr
 			/*if big-endian*/
 			/*ARGB*/
 			/*0123 - cairo*/
-			/*3003 - opengl*/
+			/*3012 - opengl*/
 			video::IImage* image = new CImage(ECF_A8R8G8B8, core::dimension2d<u32>(width, height));
 			unsigned char* data = (unsigned char*)image->lock();
 
@@ -140,5 +140,13 @@ namespace irr
 
 	}// end namespace irr
 }//end namespace video
+
+//we need this stub for using boost::shared_array with compiler flag -fno-exceptions
+namespace boost
+{
+	void throw_exception(std::exception const & e)
+	{
+	}
+}
 
 #endif
