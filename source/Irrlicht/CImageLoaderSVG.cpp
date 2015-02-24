@@ -4,7 +4,7 @@
 
 #include <rsvg.h>
 #include <cairo.h>
-#include <boost/shared_array.hpp>
+#include <boost/scoped_array.hpp>
 
 #include "CImage.h"
 #include "CReadFile.h"
@@ -45,89 +45,36 @@ namespace irr
 			if (!file)
 				return 0;
 
-			GError* pError;
-			RsvgDimensionData Dims;
-			RsvgHandle* pRsvg = rsvg_handle_new();//rsvg_handle_new_from_file(sPath, &pError);
-			boost::shared_array<unsigned char> tmpBuff(new unsigned char[(int)(file->getSize())]);
-			file->read(tmpBuff.get(), (u32)file->getSize());
-			rsvg_handle_write(pRsvg, tmpBuff.get(), file->getSize(), &pError);
-			rsvg_handle_get_dimensions(pRsvg, &Dims);
+			boost::scoped_array<unsigned char> tmpBuff(new unsigned char[(int)(file->getSize())]);
+			if(!file->read(tmpBuff.get(), (u32)file->getSize()))
+				os::Printer::log("Could not read file", file->getFileName(), ELL_ERROR);
 
-			cairo_surface_t *img = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, Dims.width, Dims.height);
+			GError* pError;
+			RsvgHandle* pRsvg = rsvg_handle_new();
+			if(!rsvg_handle_write(pRsvg, tmpBuff.get(), file->getSize(), &pError))
+				os::Printer::log("Rsvg could not load svg file", file->getFileName(), ELL_ERROR);
+			rsvg_handle_close(pRsvg, &pError);//этим вызовом мы не освобождаем хендл, а указываем, что изображение полностью загружено
+
+			RsvgDimensionData Dims;
+			rsvg_handle_get_dimensions(pRsvg, &Dims);
+			cairo_surface_t *img = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
 			cairo_t *cr = cairo_create (img);
 
-			rsvg_handle_render_cairo(pRsvg, cr);
-
-			cairo_surface_flush(img);
-
-			cairo_destroy (cr);
-
-			if(!width || !height){
-					width = Dims.width;
-					height = Dims.height;
-			}
-
-			int nStride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32, width);
-			boost::shared_array<unsigned char> lImageBuffer(new unsigned char[(int)(nStride * height)]);
-			memset(lImageBuffer.get(), 0, (int)(nStride * height));
-
-			cairo_surface_t *surface =cairo_image_surface_create_for_data(lImageBuffer.get(),
-																																		CAIRO_FORMAT_ARGB32,
-																																		width,
-																																		height,
-																																		nStride);
-
-			cr = cairo_create (surface);
-
-			cairo_matrix_t matr;
-			cairo_matrix_init(&matr, -1, 0, 0, -1, width/ 2.0, height / 2.0); //поворачиваем на 180 вокруг центра картинки
-			cairo_matrix_translate(&matr, -width/ 2.0, -height / 2.0);
-
 			if(width != Dims.width || height != Dims.height){
-				cairo_matrix_scale(&matr, ((double)width)/Dims.width, ((double)height)/Dims.height);
+				cairo_scale(cr, ((double)width)/Dims.width, ((double)height)/Dims.height);
+				cairo_save(cr);
 			}
 
-			cairo_transform(cr, &matr);
+			if(!rsvg_handle_render_cairo(pRsvg, cr))
+				os::Printer::log("Rsvg could not render svg", file->getFileName(), ELL_ERROR);
 
-			cairo_set_source_surface (cr, img, 0, 0);
-			cairo_paint (cr);
-
-			cairo_surface_flush(surface);
-
-			cairo_surface_destroy (img);
-
-
-			rsvg_handle_close(pRsvg, &pError);
-			g_object_unref(G_OBJECT(pRsvg));
+			unsigned char* cairo_data = cairo_image_surface_get_data(img);
+			video::IImage* image = new CImage(ECF_A8R8G8B8, core::dimension2d<u32>(width, height), cairo_data,
+																				false, false);
 
 			cairo_destroy (cr);
-			cairo_surface_destroy (surface);
-
-			/*opengl*/
-			/*RGBA*/
-			/*0123*/
-			/*ARGB32 from cairo*/
-			/*if little-endian*/
-			/*BGRA*/
-			/*0123 - cairo*/
-			/*2103 - opengl*/
-			/*if big-endian*/
-			/*ARGB*/
-			/*0123 - cairo*/
-			/*3012 - opengl*/
-			video::IImage* image = new CImage(ECF_A8R8G8B8, core::dimension2d<u32>(width, height));
-			unsigned char* data = (unsigned char*)image->lock();
-
-			for (int i = 0; i < width; i++) {
-				for (int j = 0; j < height; j++) {
-					data[i * height * 4 + j*4 + 2] = lImageBuffer[i * height * 4 + j*4 + 0];
-					data[i * height * 4 + j*4 + 1] = lImageBuffer[i * height * 4 + j*4 + 1];
-					data[i * height * 4 + j*4 + 0] = lImageBuffer[i * height * 4 + j*4 + 2];
-					data[i * height * 4 + j*4 + 3] = lImageBuffer[i * height * 4 + j*4 + 3];
-				}
-			}
-
-			image->unlock();
+			cairo_surface_destroy (img);
+			g_object_unref(G_OBJECT(pRsvg));
 
 			return image;
 		}
@@ -142,11 +89,13 @@ namespace irr
 }//end namespace video
 
 //we need this stub for using boost::shared_array with compiler flag -fno-exceptions
+#ifdef BOOST_NO_EXCEPTIONS
 namespace boost
 {
 	void throw_exception(std::exception const & e)
 	{
 	}
 }
+#endif
 
 #endif
