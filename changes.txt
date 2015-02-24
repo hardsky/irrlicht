@@ -1,3 +1,8 @@
+--------------
+24.02.15 (possible patch)
+
+- svg format reader, with ability to scale image on load
+
 --------------------------
 Changes in 1.9 (not yet released)
 
