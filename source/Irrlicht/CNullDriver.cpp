@@ -422,7 +422,7 @@ void CNullDriver::renameTexture(ITexture* texture, const io::path& newName)
 
 
 //! loads a Texture
-	ITexture* CNullDriver::getTexture(const io::path& filename, int width, int height)
+ITexture* CNullDriver::getTexture(const io::path& filename, int width, int height)
 {
 	// Identify textures by their absolute filenames if possible.
 	const io::path absolutePath = FileSystem->getAbsolutePath(filename);
@@ -440,6 +440,22 @@ void CNullDriver::renameTexture(ITexture* texture, const io::path& newName)
 	{
 		texture->updateSource(ETS_FROM_CACHE);
 		return texture;
+	}
+
+	io::path textureHash;
+	if(width &&  height)
+	{
+		textureHash += filename;
+		textureHash += width;
+		textureHash += _IRR_TEXT("x");
+		textureHash += height;
+
+		texture = findTexture(textureHash);
+		if (texture)
+		{
+			texture->updateSource(ETS_FROM_CACHE);
+			return texture;
+		}
 	}
 
 	// Now try to open the file using the complete path.
@@ -462,7 +478,7 @@ void CNullDriver::renameTexture(ITexture* texture, const io::path& newName)
 			return texture;
 		}
 
-		texture = loadTextureFromFile(file, "", width, height);
+		texture = loadTextureFromFile(file, textureHash, width, height);
 		file->drop();
 
 		if (texture)
@@ -498,7 +514,23 @@ void CNullDriver::renameTexture(ITexture* texture, const io::path& newName)
 			return texture;
 		}
 
-		texture = loadTextureFromFile(file, "", width, height);
+		io::path textureHash;
+		if(width &&  height)
+		{
+			textureHash += file->getFileName();
+			textureHash += width;
+			textureHash += _IRR_TEXT("x");
+			textureHash += height;
+
+			texture = findTexture(textureHash);
+			if (texture)
+			{
+				texture->updateSource(ETS_FROM_CACHE);
+				return texture;
+			}
+		}
+
+		texture = loadTextureFromFile(file, textureHash, width, height);
 
 		if (texture)
 		{
@@ -516,7 +548,7 @@ void CNullDriver::renameTexture(ITexture* texture, const io::path& newName)
 
 
 //! opens the file and loads it into the surface
-	video::ITexture* CNullDriver::loadTextureFromFile(io::IReadFile* file, const io::path& hashName, int width, int height)
+video::ITexture* CNullDriver::loadTextureFromFile(io::IReadFile* file, const io::path& hashName, int width, int height)
 {
 	ITexture* texture = 0;
 	IImage* image = createImageFromFile(file, width, height);
@@ -1330,7 +1362,7 @@ bool CNullDriver::getTextureCreationFlag(E_TEXTURE_CREATION_FLAG flag) const
 
 
 //! Creates a software image from a file.
-	IImage* CNullDriver::createImageFromFile(io::IReadFile* file, int width, int height)
+IImage* CNullDriver::createImageFromFile(io::IReadFile* file, int width, int height)
 {
 	if (!file)
 		return 0;
